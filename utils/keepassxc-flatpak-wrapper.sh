@@ -24,15 +24,15 @@
 # https://developer.mozilla.org/docs/Mozilla/Add-ons/WebExtensions/Native_messaging
 
 # Chromium, Google Chrome, Vivaldi & Brave
-readonly arg1='chrome-extension://oboonakemofpalcgghocfoadofidjkkk'
-# Firefox & Tor Browser
-readonly arg2='keepassxc-browser@keepassxc.org'
+readonly chromeOrigin='chrome-extension://oboonakemofpalcgghocfoadofidjkkk'
 # Microsoft Edge
-readonly arg3='chrome-extension://pdffhmdngciaglkoonimfcmckehcpafo'
+readonly edgeOrigin='chrome-extension://pdffhmdngciaglkoonimfcmckehcpafo'
+# Firefox & Tor Browser
+readonly firefoxExtension='keepassxc-browser@keepassxc.org'
 
 # Check arguments to see if this was a proxy launch from the browser
 # Match the Chromium origin as a prefix to allow a trailing slash
-if [[ "$1" == "$arg1"* || "$1" == "$arg3"* || "$2" == "$arg2" ]]; then
+if [[ "$1" == "$chromeOrigin"* || "$1" == "$edgeOrigin"* || "$2" == "$firefoxExtension" ]]; then
     exec keepassxc-proxy "$@"
 elif [[ "$1" == "cli" ]]; then
     exec keepassxc-cli "${@:2}"
