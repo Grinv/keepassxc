@@ -78,27 +78,49 @@ void TestFileWatcher::testDeleteDuringChecksum()
     QCoreApplication::processEvents();
 }
 
-void TestFileWatcher::testRestartDuringChecksum()
+void TestFileWatcher::testRestartSameFileDuringChecksum()
 {
-    // A checksum that was started for the previous file must not be compared with the new one
-    QTemporaryFile first;
-    QTemporaryFile second;
-    QVERIFY(first.open());
-    QVERIFY(second.open());
-    QVERIFY(first.write("first") > 0);
-    QVERIFY(second.write("second") > 0);
-    first.flush();
-    second.flush();
+    // Saving the database restarts the watcher on the same file. A checksum of the old
+    // content that arrives after the restart must not be reported as an external change.
+    QTemporaryFile file;
+    QVERIFY(file.open());
+    QVERIFY(file.write("old") > 0);
+    file.flush();
 
     FileWatcher watcher;
     QSignalSpy spy(&watcher, &FileWatcher::fileChanged);
-    watcher.start(first.fileName());
+    watcher.start(file.fileName());
 
     PoolBlocker blocker;
     QVERIFY(QMetaObject::invokeMethod(&watcher, "checkFileChanged"));
-    watcher.start(second.fileName());
-
+    // Let the task hash the old content; its result waits in the event queue
     blocker.release();
+
+    QVERIFY(file.seek(0));
+    QVERIFY(file.write("new") > 0);
+    file.flush();
+    watcher.start(file.fileName());
+
+    QTest::qWait(100);
+    QCOMPARE(spy.count(), 0);
+}
+
+void TestFileWatcher::testUnreadableFile()
+{
+    // A file that can't be read, e.g. on a network share that is briefly gone, is not a change
+    QTemporaryFile file;
+    QVERIFY(file.open());
+    QVERIFY(file.write("content") > 0);
+    file.flush();
+
+    FileWatcher watcher;
+    QSignalSpy spy(&watcher, &FileWatcher::fileChanged);
+    watcher.start(file.fileName());
+
+    // Closes the file first, Windows can't delete a file that is still open
+    QVERIFY(file.remove());
+    QVERIFY(QMetaObject::invokeMethod(&watcher, "checkFileChanged"));
+
     QTest::qWait(100);
     QCOMPARE(spy.count(), 0);
 }

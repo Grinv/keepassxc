@@ -26,7 +26,8 @@ class TestFileWatcher : public QObject
 
 private slots:
     void testDeleteDuringChecksum();
-    void testRestartDuringChecksum();
+    void testRestartSameFileDuringChecksum();
+    void testUnreadableFile();
 };
 
 #endif // KEEPASSXC_TESTFILEWATCHER_H

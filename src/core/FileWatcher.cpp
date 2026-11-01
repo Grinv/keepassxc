@@ -51,6 +51,21 @@ FileWatcher::FileWatcher(QObject* parent)
     connect(&m_fileWatcher, SIGNAL(fileChanged(QString)), SLOT(checkFileChanged()));
     connect(&m_fileChecksumTimer, SIGNAL(timeout()), SLOT(checkFileChanged()));
     connect(&m_fileChangeDelayTimer, &QTimer::timeout, this, [this] { emit fileChanged(m_filePath); });
+    connect(&m_checksumWatcher, &QFutureWatcherBase::finished, this, [this] {
+        // Canceled by stop()
+        if (m_checksumWatcher.isCanceled()) {
+            return;
+        }
+
+        // An unreadable file keeps the last known checksum, see calculateChecksum()
+        const auto checksum = m_checksumWatcher.result();
+        if (!checksum.isEmpty() && checksum != m_fileChecksum) {
+            m_fileChecksum = checksum;
+            m_fileChangeDelayTimer.start(0);
+        }
+
+        m_ignoreFileChange = false;
+    });
     m_fileChangeDelayTimer.setSingleShot(true);
     m_fileIgnoreDelayTimer.setSingleShot(true);
 }
@@ -101,6 +116,8 @@ void FileWatcher::stop()
     m_fileChecksum.clear();
     m_fileChecksumTimer.stop();
     m_fileChangeDelayTimer.stop();
+    // Drop a checksum computed before stop(), also one already waiting in the event queue
+    m_checksumWatcher.setFuture({});
     m_paused = false;
 }
 
@@ -139,23 +156,8 @@ void FileWatcher::checkFileChanged()
     // Prevent reentrance
     m_ignoreFileChange = true;
 
-    // The worker only gets copies: this object can be deleted or restarted on another file meanwhile
-    auto future = QtConcurrent::run(fileChecksum, m_filePath, m_fileChecksumSizeBytes)
-                      .then(this, [this, filePath = m_filePath](const QByteArray& checksum) {
-                          // Ignore the result if the watcher has moved to another file
-                          if (filePath != m_filePath) {
-                              return;
-                          }
-
-                          // An unreadable file keeps the last known checksum, see calculateChecksum()
-                          if (!checksum.isEmpty() && checksum != m_fileChecksum) {
-                              m_fileChecksum = checksum;
-                              m_fileChangeDelayTimer.start(0);
-                          }
-
-                          m_ignoreFileChange = false;
-                      });
-    Q_UNUSED(future)
+    // The worker only gets copies: this object can be deleted or restarted meanwhile
+    m_checksumWatcher.setFuture(QtConcurrent::run(fileChecksum, m_filePath, m_fileChecksumSizeBytes));
 }
 
 QByteArray FileWatcher::calculateChecksum()
