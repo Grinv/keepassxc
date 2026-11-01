@@ -93,6 +93,10 @@ void NativeMessagingProxy::setupLocalSocket()
 {
     m_localSocket.reset(new QLocalSocket());
     m_localSocket->connectToServer(BrowserShared::localServerPath());
+    if (m_localSocket->state() == QLocalSocket::UnconnectedState) {
+        // The application is not running. Queued, because quit() does nothing before the event loop starts.
+        QMetaObject::invokeMethod(this, &NativeMessagingProxy::socketDisconnected, Qt::QueuedConnection);
+    }
     m_localSocket->setReadBufferSize(BrowserShared::SOCKET_BUFFER_SIZE);
     int socketDesc = m_localSocket->socketDescriptor();
     if (socketDesc) {
