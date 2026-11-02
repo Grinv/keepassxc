@@ -71,9 +71,8 @@ namespace FdoSecrets
                 out = arg;
             }
             // other conversions are handled here
-            if (!out.convert(id)) {
-                qDebug() << "Internal error: failed conversion from" << arg << "to type" << QMetaType::typeName(id)
-                         << id;
+            if (!out.convert(QMetaType(id))) {
+                qDebug() << "Internal error: failed conversion from" << arg << "to type" << QMetaType(id).name() << id;
                 return false;
             }
             // good to go
@@ -122,7 +121,7 @@ namespace FdoSecrets
             // assumes output params (reference parameter) all follows input params
             bool outputBegin = false;
             for (const auto& paramType : mm.parameterTypes()) {
-                auto id = QMetaType::type(paramType);
+                auto id = QMetaType::fromName(paramType).id();
 
                 // handle the first optional calling client param
                 if (id == qMetaTypeId<DBusClientPtr>()) {
@@ -133,7 +132,7 @@ namespace FdoSecrets
                 // handle output types
                 if (paramType.endsWith('&')) {
                     outputBegin = true;
-                    id = QMetaType::type(paramType.left(paramType.length() - 1));
+                    id = QMetaType::fromName(paramType.left(paramType.length() - 1)).id();
                     md.outputTypes.append(id);
                     auto paramData = typeToWireType(id);
                     if (paramData.signature.isEmpty()) {
@@ -216,7 +215,7 @@ namespace FdoSecrets
             } else if (arg.userType() == QMetaType::QString) {
                 req.signature = "s";
             } else {
-                qDebug() << "Unhandled SetProperty value type" << QMetaType::typeName(arg.userType()) << arg.userType();
+                qDebug() << "Unhandled SetProperty value type" << arg.metaType().name() << arg.userType();
                 return false;
             }
         } else if (req.member == "Get" && req.signature == "ss") {

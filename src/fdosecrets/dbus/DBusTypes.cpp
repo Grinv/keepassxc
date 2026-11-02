@@ -188,7 +188,7 @@ namespace FdoSecrets
         if (!mt.isValid()) {
             return {};
         }
-        if (QByteArray(QMetaType::typeName(id)).startsWith("QList")) {
+        if (QByteArray(mt.name()).startsWith("QList")) {
             // QList<Object*>
             return {QByteArrayLiteral("ao"), qMetaTypeId<QList<QDBusObjectPath>>()};
         }
