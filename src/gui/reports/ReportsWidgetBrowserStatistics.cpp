@@ -387,11 +387,11 @@ QMap<QString, QStringList> ReportsWidgetBrowserStatistics::getBrowserConfigFromE
         QJsonDocument doc = QJsonDocument::fromJson(config.toUtf8());
         if (!doc.isNull()) {
             auto jsonObject = doc.object();
-            auto allowedSites = jsonObject["Allow"].toArray();
-            auto deniedSites = jsonObject["Deny"].toArray();
+            const auto allowedSites = jsonObject["Allow"].toArray();
+            const auto deniedSites = jsonObject["Deny"].toArray();
 
             QStringList allowed;
-            foreach (const auto& value, allowedSites) {
+            for (const auto& value : allowedSites) {
                 auto url = value.toString();
                 if (!url.isEmpty()) {
                     allowed << url;
@@ -399,7 +399,7 @@ QMap<QString, QStringList> ReportsWidgetBrowserStatistics::getBrowserConfigFromE
             }
 
             QStringList denied;
-            foreach (const auto& value, deniedSites) {
+            for (const auto& value : deniedSites) {
                 auto url = value.toString();
                 if (!url.isEmpty()) {
                     denied << url;
