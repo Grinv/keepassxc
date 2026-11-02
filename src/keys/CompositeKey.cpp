@@ -129,7 +129,7 @@ bool CompositeKey::transform(const Kdf& kdf, QByteArray& result, QString* error)
     QByteArray seed = kdf.seed();
     Q_ASSERT(!seed.isEmpty());
     bool ok = false;
-    return kdf.transform(rawKey(&seed, &ok, error), result) && ok;
+    return kdf.transform(rawKey(&seed, &ok, error), result, error) && ok;
 }
 
 bool CompositeKey::challenge(const QByteArray& seed, QByteArray& result, QString* error) const

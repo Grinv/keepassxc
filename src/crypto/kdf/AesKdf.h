@@ -28,7 +28,7 @@ public:
 
     bool processParameters(const QVariantMap& p) override;
     QVariantMap writeParameters() override;
-    bool transform(const QByteArray& raw, QByteArray& result) const override;
+    bool transform(const QByteArray& raw, QByteArray& result, QString* error = nullptr) const override;
     QSharedPointer<Kdf> clone() const override;
     QString toString() const override;
 

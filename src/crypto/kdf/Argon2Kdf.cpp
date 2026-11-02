@@ -161,7 +161,7 @@ QVariantMap Argon2Kdf::writeParameters()
     return p;
 }
 
-bool Argon2Kdf::transform(const QByteArray& raw, QByteArray& result) const
+bool Argon2Kdf::transform(const QByteArray& raw, QByteArray& result, QString* error) const
 {
     result.clear();
     result.resize(32);
@@ -179,6 +179,12 @@ bool Argon2Kdf::transform(const QByteArray& raw, QByteArray& result) const
                             seed().size());
     } catch (const std::exception& e) {
         qWarning("Argon2 error: %s", e.what());
+        if (error) {
+            *error = QObject::tr("Argon2 failed with %1 MiB of memory and %2 threads (%3)")
+                         .arg(memory() / 1024)
+                         .arg(parallelism())
+                         .arg(e.what());
+        }
         return false;
     }
 

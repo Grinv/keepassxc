@@ -28,6 +28,7 @@
 #include "crypto/Crypto.h"
 #include "crypto/CryptoHash.h"
 #include "crypto/kdf/AesKdf.h"
+#include "crypto/kdf/Argon2Kdf.h"
 #include "format/KeePass2Reader.h"
 #include "format/KeePass2Writer.h"
 #include "keys/CompositeKey.h"
@@ -327,4 +328,20 @@ void TestKeys::testCompositeKeyComponents()
     buffer.seek(0);
     QVERIFY(!reader.readDatabase(&buffer, compositeKeyDec4, db2.data()));
     QVERIFY(reader.hasError());
+}
+
+void TestKeys::testKdfError()
+{
+    // Botan rejects more than 8 GiB of Argon2 memory, which a database can still ask for
+    Argon2Kdf kdf(Argon2Kdf::Type::Argon2id);
+    kdf.randomizeSeed();
+    QVERIFY(kdf.setMemory(9ull * 1024 * 1024));
+
+    CompositeKey key;
+    key.addKey(QSharedPointer<PasswordKey>::create("test"));
+
+    QByteArray result;
+    QString error;
+    QVERIFY(!key.transform(kdf, result, &error));
+    QVERIFY2(!error.isEmpty(), "The KDF failure must reach the caller");
 }

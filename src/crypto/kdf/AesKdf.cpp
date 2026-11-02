@@ -60,8 +60,9 @@ QVariantMap AesKdf::writeParameters()
     return p;
 }
 
-bool AesKdf::transform(const QByteArray& raw, QByteArray& result) const
+bool AesKdf::transform(const QByteArray& raw, QByteArray& result, QString* error) const
 {
+    Q_UNUSED(error)
     return transformKeyRaw(raw, m_seed, m_rounds, &result);
 }
 
