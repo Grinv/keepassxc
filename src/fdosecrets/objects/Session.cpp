@@ -22,16 +22,18 @@
 
 #include "core/Tools.h"
 
+#include <memory>
+
 namespace FdoSecrets
 {
     Session* Session::Create(QSharedPointer<CipherPair> cipher, const QString& peer, Service* parent)
     {
-        QScopedPointer<Session> res{new Session(std::move(cipher), peer, parent)};
-        if (!res->dbus()->registerObject(res.data())) {
+        std::unique_ptr<Session> res{new Session(std::move(cipher), peer, parent)};
+        if (!res->dbus()->registerObject(res.get())) {
             return nullptr;
         }
 
-        return res.take();
+        return res.release();
     }
 
     Session::Session(QSharedPointer<CipherPair> cipher, const QString& peer, Service* parent)

@@ -36,8 +36,8 @@
 #include <QJsonObject>
 #include <QJsonParseError>
 #include <QMap>
-#include <QScopedPointer>
 #include <QUrl>
+#include <memory>
 
 namespace
 {
@@ -55,7 +55,7 @@ namespace
         }
 
         // Create entry and assign basic values
-        QScopedPointer<Entry> entry(new Entry());
+        std::unique_ptr<Entry> entry(new Entry());
         entry->setEmitModified(false);
         entry->setUuid(QUuid::createUuid());
         entry->setTitle(itemMap.value("name").toString());
@@ -257,7 +257,7 @@ namespace
         }
 
         entry->setEmitModified(true);
-        return entry.take();
+        return entry.release();
     }
 
     Group* createGroup(Group* rootGroup, const QString& folderName)

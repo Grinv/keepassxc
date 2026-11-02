@@ -28,6 +28,8 @@
 #include "gui/entry/EntryModel.h"
 #include "remote/RemoteHandler.h"
 
+#include <memory>
+
 class DatabaseOpenDialog;
 class DatabaseOpenWidget;
 class DatabaseSettingsDialog;
@@ -323,8 +325,8 @@ private:
     QPointer<TagView> m_tagView;
     QPointer<EntryView> m_entryView;
 
-    QScopedPointer<Group> m_newGroup;
-    QScopedPointer<Entry> m_newEntry;
+    std::unique_ptr<Group> m_newGroup;
+    std::unique_ptr<Entry> m_newEntry;
     QPointer<Group> m_newParent;
 
     QUuid m_groupBeforeLock;
