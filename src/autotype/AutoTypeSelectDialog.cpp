@@ -78,7 +78,7 @@ AutoTypeSelectDialog::AutoTypeSelectDialog(QWidget* parent)
     connect(m_ui->search, SIGNAL(returnPressed()), SLOT(activateCurrentMatch()));
     connect(&m_searchTimer, SIGNAL(timeout()), SLOT(performSearch()));
 
-    m_ui->searchCheckBox->setShortcut(Qt::CTRL + Qt::Key_F);
+    m_ui->searchCheckBox->setShortcut(Qt::CTRL | Qt::Key_F);
     connect(m_ui->searchCheckBox, &QCheckBox::toggled, this, [this](bool checked) {
         setDelayedSearch(checked);
         performSearch();
