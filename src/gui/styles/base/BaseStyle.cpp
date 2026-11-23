@@ -2225,7 +2225,7 @@ void BaseStyle::drawControl(ControlElement element,
         QColor dimHighlight(qMin(highlight.red() / 2 + 110, 255),
                             qMin(highlight.green() / 2 + 110, 255),
                             qMin(highlight.blue() / 2 + 110, 255));
-        dimHighlight.setAlpha(widget && widget->isTopLevel() ? 255 : 80);
+        dimHighlight.setAlpha(widget && widget->isWindow() ? 255 : 80);
         painter->setRenderHint(QPainter::Antialiasing, true);
         painter->translate(0.5, 0.5);
         painter->setBrush(dimHighlight);
