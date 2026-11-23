@@ -31,6 +31,7 @@
 #include <QMimeDatabase>
 #include <QSet>
 #include <QStringDecoder>
+#include <memory>
 
 namespace FdoSecrets
 {
@@ -63,12 +64,12 @@ namespace FdoSecrets
 
     Item* Item::Create(Collection* parent, Entry* backend)
     {
-        QScopedPointer<Item> res{new Item(parent, backend)};
-        if (!res->dbus()->registerObject(res.data())) {
+        std::unique_ptr<Item> res{new Item(parent, backend)};
+        if (!res->dbus()->registerObject(res.get())) {
             return nullptr;
         }
 
-        return res.take();
+        return res.release();
     }
 
     Item::Item(Collection* parent, Entry* backend)

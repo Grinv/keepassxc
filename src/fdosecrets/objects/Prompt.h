@@ -23,6 +23,7 @@
 #include "fdosecrets/dbus/DBusObject.h"
 
 #include <QSet>
+#include <memory>
 
 class QWindow;
 
@@ -91,12 +92,12 @@ namespace FdoSecrets
 
         template <typename PROMPT, typename... ARGS> static PromptBase* Create(Service* parent, ARGS&&... args)
         {
-            QScopedPointer<PROMPT> res{new PROMPT(parent, std::forward<ARGS>(args)...)};
-            if (!res->dbus()->registerObject(res.data())) {
+            std::unique_ptr<PROMPT> res{new PROMPT(parent, std::forward<ARGS>(args)...)};
+            if (!res->dbus()->registerObject(res.get())) {
                 // internal error;
                 return nullptr;
             }
-            return res.take();
+            return res.release();
         }
 
     signals:

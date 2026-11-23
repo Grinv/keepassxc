@@ -32,6 +32,8 @@
 #include "keys/FileKey.h"
 #include "streams/SymmetricCipherStream.h"
 
+#include <memory>
+
 class KeePass1Key : public CompositeKey
 {
 public:
@@ -305,7 +307,7 @@ KeePass1Reader::testKeys(const QString& password, const QByteArray& keyfileData,
 {
     const QList<PasswordEncoding> encodings = {Windows1252, Latin1, UTF8};
 
-    QScopedPointer<SymmetricCipherStream> cipherStream;
+    std::unique_ptr<SymmetricCipherStream> cipherStream;
     QByteArray passwordData;
 
     const auto currentEncoding = QStringConverter::encodingForName("Windows-1252");
@@ -357,7 +359,7 @@ KeePass1Reader::testKeys(const QString& password, const QByteArray& keyfileData,
             return nullptr;
         }
 
-        bool success = verifyKey(cipherStream.data());
+        bool success = verifyKey(cipherStream.get());
 
         cipherStream->reset();
         cipherStream->close();
@@ -388,7 +390,7 @@ KeePass1Reader::testKeys(const QString& password, const QByteArray& keyfileData,
                       "If this reoccurs, then your database file may be corrupt."));
     }
 
-    return cipherStream.take();
+    return cipherStream.release();
 }
 
 QByteArray KeePass1Reader::key(const QByteArray& password, const QByteArray& keyfileData)
@@ -431,7 +433,7 @@ bool KeePass1Reader::verifyKey(SymmetricCipherStream* cipherStream)
 
 Group* KeePass1Reader::readGroup(QIODevice* cipherStream)
 {
-    QScopedPointer<Group> group(new Group());
+    std::unique_ptr<Group> group(new Group());
     group->setUpdateTimeinfo(false);
     group->setParent(m_tmpParent);
 
@@ -562,15 +564,15 @@ Group* KeePass1Reader::readGroup(QIODevice* cipherStream)
 
     group->setUuid(QUuid::createUuid());
     group->setTimeInfo(timeInfo);
-    m_groupIds.insert(groupId, group.data());
-    m_groupLevels.insert(group.data(), groupLevel);
+    m_groupIds.insert(groupId, group.get());
+    m_groupLevels.insert(group.get(), groupLevel);
 
-    return group.take();
+    return group.release();
 }
 
 Entry* KeePass1Reader::readEntry(QIODevice* cipherStream)
 {
-    QScopedPointer<Entry> entry(new Entry());
+    std::unique_ptr<Entry> entry(new Entry());
     entry->setUpdateTimeinfo(false);
     entry->setGroup(m_tmpParent);
 
@@ -641,7 +643,7 @@ Entry* KeePass1Reader::readEntry(QIODevice* cipherStream)
             entry->setPassword(QString::fromUtf8(fieldData.constData()));
             break;
         case 0x0008:
-            parseNotes(QString::fromUtf8(fieldData.constData()), entry.data());
+            parseNotes(QString::fromUtf8(fieldData.constData()), entry.get());
             break;
         case 0x0009: {
             if (fieldSize != 5) {
@@ -710,12 +712,12 @@ Entry* KeePass1Reader::readEntry(QIODevice* cipherStream)
         raiseError(tr("Incomplete entry: No UUID or group ID"));
         return nullptr;
     }
-    m_entryUuids.insert(uuid, entry.data());
-    m_entryGroupIds.insert(entry.data(), groupId.toUInt());
+    m_entryUuids.insert(uuid, entry.get());
+    m_entryGroupIds.insert(entry.get(), groupId.toUInt());
 
     entry->setTimeInfo(timeInfo);
 
-    return entry.take();
+    return entry.release();
 }
 
 void KeePass1Reader::parseNotes(const QString& rawNotes, Entry* entry)

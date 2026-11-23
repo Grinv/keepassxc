@@ -27,6 +27,8 @@
 
 #include "core/Resources.h"
 
+#include <memory>
+
 /**
  * Install all KeePassXC and Qt translators.
  */
@@ -65,11 +67,11 @@ bool Translator::installTranslator(const QStringList& languages, const QString& 
 {
     for (const auto& language : languages) {
         QLocale locale(language);
-        QScopedPointer<QTranslator> translator(new QTranslator(qApp));
+        std::unique_ptr<QTranslator> translator(new QTranslator(qApp));
         if (translator->load(locale, "keepassxc_", "", path)) {
-            return QCoreApplication::installTranslator(translator.take());
-        } else if (translator->load(locale, "keepassxc_", "", QLibraryInfo::location(QLibraryInfo::TranslationsPath))) {
-            return QCoreApplication::installTranslator(translator.take());
+            return QCoreApplication::installTranslator(translator.release());
+        } else if (translator->load(locale, "keepassxc_", "", QLibraryInfo::path(QLibraryInfo::TranslationsPath))) {
+            return QCoreApplication::installTranslator(translator.release());
         }
     }
 
@@ -88,11 +90,11 @@ bool Translator::installQtTranslator(const QStringList& languages, const QString
 {
     for (const auto& language : languages) {
         QLocale locale(language);
-        QScopedPointer<QTranslator> qtTranslator(new QTranslator(qApp));
+        std::unique_ptr<QTranslator> qtTranslator(new QTranslator(qApp));
         if (qtTranslator->load(locale, "qtbase_", "", path)) {
-            return QCoreApplication::installTranslator(qtTranslator.take());
-        } else if (qtTranslator->load(locale, "qtbase_", "", QLibraryInfo::location(QLibraryInfo::TranslationsPath))) {
-            return QCoreApplication::installTranslator(qtTranslator.take());
+            return QCoreApplication::installTranslator(qtTranslator.release());
+        } else if (qtTranslator->load(locale, "qtbase_", "", QLibraryInfo::path(QLibraryInfo::TranslationsPath))) {
+            return QCoreApplication::installTranslator(qtTranslator.release());
         }
     }
     return false;

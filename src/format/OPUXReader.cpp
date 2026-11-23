@@ -27,8 +27,8 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QScopedPointer>
 #include <QUrl>
+#include <memory>
 
 #include <../minizip/unzip.h>
 
@@ -65,7 +65,7 @@ namespace
         const auto detailsMap = itemMap.value("details").toMap();
 
         // Create entry and assign basic values
-        QScopedPointer<Entry> entry(new Entry());
+        std::unique_ptr<Entry> entry(new Entry());
         entry->setUuid(QUuid::createUuid());
         entry->setTitle(overviewMap.value("title").toString());
         entry->setUrl(overviewMap.value("url").toString());
@@ -207,7 +207,7 @@ namespace
         timeInfo.setLastAccessTime(modifiedTime);
         entry->setTimeInfo(timeInfo);
 
-        return entry.take();
+        return entry.release();
     }
 
     void writeVaultToDatabase(const QJsonObject& vault, QSharedPointer<Database> db, unzFile uf = nullptr)

@@ -31,8 +31,8 @@
 #include <QJsonObject>
 #include <QJsonParseError>
 #include <QMap>
-#include <QScopedPointer>
 #include <QUrl>
+#include <memory>
 
 namespace
 {
@@ -43,7 +43,7 @@ namespace
         const auto metadataMap = dataMap.value("metadata").toMap();
 
         // Create entry and assign basic values
-        QScopedPointer<Entry> entry(new Entry());
+        std::unique_ptr<Entry> entry(new Entry());
         entry->setUuid(QUuid::createUuid());
         entry->setTitle(metadataMap.value("name").toString());
         entry->setNotes(metadataMap.value("note").toString());
@@ -176,7 +176,7 @@ namespace
         timeInfo.setLastAccessTime(modifiedTime);
         entry->setTimeInfo(timeInfo);
 
-        return entry.take();
+        return entry.release();
     }
 
     void writeVaultToDatabase(const QJsonObject& vault, QSharedPointer<Database> db)

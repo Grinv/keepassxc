@@ -31,6 +31,8 @@
 #include "core/Global.h"
 #include "core/TimeInfo.h"
 
+#include <memory>
+
 class Database;
 class Group;
 class PasswordHealth;
@@ -269,7 +271,7 @@ private:
     QList<Entry*> m_history; // Items sorted from oldest to newest
     QPointer<Entry> m_historyOwner;
 
-    QScopedPointer<Entry> m_tmpHistoryItem;
+    std::unique_ptr<Entry> m_tmpHistoryItem;
     bool m_modifiedSinceBegin;
     QPointer<Group> m_group;
     bool m_updateTimeinfo;

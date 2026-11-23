@@ -27,6 +27,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <memory>
 
 bool OpVaultReader::decryptBandEntry(const QJsonObject& bandEntry,
                                      QJsonObject& data,
@@ -111,11 +112,11 @@ Entry* OpVaultReader::processBandEntry(const QJsonObject& bandEntry, const QDir&
         return nullptr;
     }
 
-    QScopedPointer<Entry> entry(new Entry());
+    std::unique_ptr<Entry> entry(new Entry());
 
     if (bandEntry.contains("trashed") && bandEntry["trashed"].toBool()) {
         // Send this entry to the recycle bin
-        rootGroup->database()->recycleEntry(entry.data());
+        rootGroup->database()->recycleEntry(entry.get());
     } else if (bandEntry.contains("category")) {
         const QJsonValue& categoryValue = bandEntry["category"];
         if (categoryValue.isString()) {
@@ -164,7 +165,7 @@ Entry* OpVaultReader::processBandEntry(const QJsonObject& bandEntry, const QDir&
     }
     entry->setUuid(Tools::hexToUuid(uuid));
 
-    if (!fillAttributes(entry.data(), bandEntry)) {
+    if (!fillAttributes(entry.get(), bandEntry)) {
         return nullptr;
     }
 
@@ -209,11 +210,11 @@ Entry* OpVaultReader::processBandEntry(const QJsonObject& bandEntry, const QDir&
         }
         const QJsonObject& section = sectionValue.toObject();
 
-        fillFromSection(entry.data(), section);
+        fillFromSection(entry.get(), section);
     }
 
-    fillAttachments(entry.data(), attachmentDir, entryKey, entryHmacKey);
-    return entry.take();
+    fillAttachments(entry.get(), attachmentDir, entryKey, entryHmacKey);
+    return entry.release();
 }
 
 bool OpVaultReader::fillAttributes(Entry* entry, const QJsonObject& bandEntry)

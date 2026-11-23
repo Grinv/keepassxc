@@ -1099,7 +1099,7 @@ void Entry::copyDataFrom(const Entry* other)
 
 void Entry::beginUpdate()
 {
-    Q_ASSERT(m_tmpHistoryItem.isNull());
+    Q_ASSERT(!m_tmpHistoryItem);
 
     m_tmpHistoryItem.reset(new Entry());
     m_tmpHistoryItem->m_uuid = m_uuid;
@@ -1111,10 +1111,10 @@ void Entry::beginUpdate()
 
 bool Entry::endUpdate()
 {
-    Q_ASSERT(!m_tmpHistoryItem.isNull());
+    Q_ASSERT(m_tmpHistoryItem);
     if (m_modifiedSinceBegin) {
         m_tmpHistoryItem->setUpdateTimeinfo(true);
-        addHistoryItem(m_tmpHistoryItem.take());
+        addHistoryItem(m_tmpHistoryItem.release());
         truncateHistory();
     }
 
