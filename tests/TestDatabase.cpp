@@ -289,7 +289,7 @@ void TestDatabase::testExternallyModified()
     QTRY_COMPARE(spyFileChanged.count(), 1);
     // the first argument of the databaseFileChanged signal (triggeredBySave) should be false
     QVERIFY(spyFileChanged.at(0).length() == 1);
-    QVERIFY(spyFileChanged.at(0).at(0).type() == QVariant::Bool);
+    QVERIFY(spyFileChanged.at(0).at(0).typeId() == QMetaType::Bool);
     QVERIFY(spyFileChanged.at(0).at(0).toBool() == false);
     spyFileChanged.clear();
     // shouldn't be able to save due to external changes
@@ -298,7 +298,7 @@ void TestDatabase::testExternallyModified()
     // save should have triggered another databaseFileChanged signal
     QVERIFY(spyFileChanged.count() >= 1);
     // the first argument of the databaseFileChanged signal (triggeredBySave) should be true
-    QVERIFY(spyFileChanged.at(0).at(0).type() == QVariant::Bool);
+    QVERIFY(spyFileChanged.at(0).at(0).typeId() == QMetaType::Bool);
     QVERIFY(spyFileChanged.at(0).at(0).toBool() == true);
 
     // should be able to overwrite externally modified changes when explicitly requested
