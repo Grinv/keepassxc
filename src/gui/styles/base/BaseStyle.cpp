@@ -37,6 +37,7 @@
 #include <QTableView>
 #include <QToolBar>
 #include <QToolButton>
+#include <QWindow>
 #include <QWizard>
 
 #ifdef Q_OS_MACOS
@@ -669,6 +670,11 @@ namespace Phantom
 {
     namespace
     {
+
+        qreal windowDevicePixelRatio(const QWindow* window)
+        {
+            return window ? window->devicePixelRatio() : qApp->devicePixelRatio();
+        }
 
         // Minimal QPainter save/restore just for pen, brush, and AA render hint. If
         // you touch more than that, this won't help you. But if you're only touching
@@ -2438,8 +2444,8 @@ void BaseStyle::drawControl(ControlElement element,
         if (!header->icon.isNull()) {
             int iconExtent = qMin(qMin(rect.height(), rect.width()), option->fontMetrics.height());
             auto window = widget ? widget->window()->windowHandle() : nullptr;
-            QPixmap pixmap = header->icon.pixmap(window,
-                                                 QSize(iconExtent, iconExtent),
+            QPixmap pixmap = header->icon.pixmap(QSize(iconExtent, iconExtent),
+                                                 Ph::windowDevicePixelRatio(window),
                                                  (header->state & State_Enabled) ? QIcon::Normal : QIcon::Disabled);
             auto pixw = static_cast<int>(pixmap.width() / pixmap.devicePixelRatio());
             QRect aligned = alignedRect(
@@ -2727,7 +2733,7 @@ void BaseStyle::drawControl(ControlElement element,
                 iconSize = combo->iconSize();
             }
             QWindow* window = widget ? widget->windowHandle() : nullptr;
-            QPixmap pixmap = menuItem->icon.pixmap(window, iconSize, mode, state);
+            QPixmap pixmap = menuItem->icon.pixmap(iconSize, Ph::windowDevicePixelRatio(window), mode, state);
             const auto pixw = static_cast<int>(pixmap.width() / pixmap.devicePixelRatio());
             const auto pixh = static_cast<int>(pixmap.height() / pixmap.devicePixelRatio());
             QRect pixmapRect = QStyle::alignedRect(option->direction, Qt::AlignCenter, QSize(pixw, pixh), iconRect);
@@ -2865,7 +2871,7 @@ void BaseStyle::drawControl(ControlElement element,
             QIcon::Mode mode = button->state & State_Enabled ? QIcon::Normal : QIcon::Disabled;
             QIcon::State state = button->state & State_On ? QIcon::On : QIcon::Off;
             auto window = widget ? widget->window()->windowHandle() : nullptr;
-            QPixmap pixmap = button->icon.pixmap(window, button->iconSize, mode, state);
+            QPixmap pixmap = button->icon.pixmap(button->iconSize, Ph::windowDevicePixelRatio(window), mode, state);
             auto pixmapWidth = static_cast<int>(pixmap.width() / pixmap.devicePixelRatio());
             auto pixmapHeight = static_cast<int>(pixmap.height() / pixmap.devicePixelRatio());
             int labelWidth = pixmapWidth;
